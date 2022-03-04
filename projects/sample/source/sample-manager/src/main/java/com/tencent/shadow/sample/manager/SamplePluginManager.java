@@ -31,6 +31,7 @@ import android.view.View;
 
 import com.tencent.shadow.core.manager.installplugin.InstalledPlugin;
 import com.tencent.shadow.dynamic.host.EnterCallback;
+import com.tencent.shadow.dynamic.host.PpsController;
 import com.tencent.shadow.sample.constant.Constant;
 
 import java.util.concurrent.ExecutorService;
@@ -87,6 +88,7 @@ public class SamplePluginManager extends FastPluginManager {
             throw new IllegalArgumentException("不认识的fromId==" + fromId);
         }
     }
+
 
     private void loadViewToHost(final Context context, Bundle bundle) {
         Intent pluginIntent = new Intent();

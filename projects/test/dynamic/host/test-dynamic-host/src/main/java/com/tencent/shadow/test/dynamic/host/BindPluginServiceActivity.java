@@ -63,10 +63,6 @@ public class BindPluginServiceActivity extends Activity {
                         idlingResource.setIdleState(true);
                     }
 
-                    @Override
-                    public void onEnterComplete() {
-
-                    }
                 });
 
     }

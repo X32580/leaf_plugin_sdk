@@ -28,7 +28,6 @@ open class PluginApkConfig {
      * 业务名（空字符串表示同宿主相同业务）
      */
     var businessName = ""
-
     var apkPath = ""
     var buildTask = ""
     var dependsOn: Array<String> = emptyArray()

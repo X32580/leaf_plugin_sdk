@@ -54,6 +54,7 @@ public final class DynamicPluginManager implements PluginManager {
         mUpdater.update();
     }
 
+
     public void release() {
         if (mLogger.isInfoEnabled()) {
             mLogger.info("release");

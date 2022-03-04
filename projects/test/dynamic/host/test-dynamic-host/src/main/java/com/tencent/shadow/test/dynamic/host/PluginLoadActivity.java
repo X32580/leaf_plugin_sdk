@@ -75,10 +75,6 @@ public class PluginLoadActivity extends Activity {
                                 finish();
                             }
 
-                            @Override
-                            public void onEnterComplete() {
-
-                            }
                         });
             }
         });

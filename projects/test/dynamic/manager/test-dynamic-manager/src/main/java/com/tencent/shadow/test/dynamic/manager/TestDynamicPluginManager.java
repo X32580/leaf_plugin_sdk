@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import com.tencent.shadow.dynamic.host.EnterCallback;
 import com.tencent.shadow.dynamic.host.PluginManagerImpl;
+import com.tencent.shadow.dynamic.host.PpsController;
 import com.tencent.shadow.test.lib.constant.Constant;
 
 final public class TestDynamicPluginManager implements PluginManagerImpl {
@@ -51,4 +52,5 @@ final public class TestDynamicPluginManager implements PluginManagerImpl {
             throw new RuntimeException("不认识的fromId==" + fromId);
         }
     }
+
 }

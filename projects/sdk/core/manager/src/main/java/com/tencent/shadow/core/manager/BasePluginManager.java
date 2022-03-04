@@ -187,6 +187,7 @@ public abstract class BasePluginManager {
             File root = mUnpackManager.getAppDir();
             File oDexDir = AppCacheFolderManager.getODexDir(root, uuid);
             ODexBloc.oDexPlugin(apkFile, oDexDir, AppCacheFolderManager.getODexCopiedFile(oDexDir, partKey));
+
         } catch (InstallPluginException e) {
             if (mLogger.isErrorEnabled()) {
                 mLogger.error("oDexPlugin exception:", e);

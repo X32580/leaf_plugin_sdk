@@ -26,6 +26,7 @@ import android.view.View;
 
 import com.tencent.shadow.core.manager.installplugin.InstalledPlugin;
 import com.tencent.shadow.dynamic.host.EnterCallback;
+import com.tencent.shadow.dynamic.host.PpsController;
 import com.tencent.shadow.test.cases.PluginServiceConnectionTestCase;
 import com.tencent.shadow.test.lib.constant.Constant;
 import com.tencent.shadow.test.lib.test_manager.TestManager;
@@ -71,6 +72,7 @@ public class ServiceTestDynamicPluginManager extends FastPluginManager {
             throw new IllegalArgumentException("不认识的fromId==" + fromId);
         }
     }
+
 
     private void doCase(Intent pluginIntent) throws InterruptedException {
         String className = pluginIntent.getComponent().getClassName();

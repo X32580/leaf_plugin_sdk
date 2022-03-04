@@ -35,4 +35,6 @@ public interface PluginManager {
      * @param callback 用于从PluginManager实现中返回View
      */
     void enter(Context context, long formId, Bundle bundle, EnterCallback callback);
+
+
 }

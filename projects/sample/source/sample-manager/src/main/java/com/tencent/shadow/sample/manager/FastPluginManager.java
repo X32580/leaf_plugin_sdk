@@ -109,7 +109,6 @@ public abstract class FastPluginManager extends PluginManagerThatUseDynamicLoade
             soDirMap.put(pair.first, pair.second);
         }
         onInstallCompleted(pluginConfig, soDirMap);
-
         return getInstalledPlugins(1).get(0);
     }
 

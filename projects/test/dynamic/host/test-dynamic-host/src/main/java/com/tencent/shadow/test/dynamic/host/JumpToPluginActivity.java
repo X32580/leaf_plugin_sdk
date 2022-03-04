@@ -126,10 +126,6 @@ public class JumpToPluginActivity extends Activity {
                     public void onCloseLoadingView() {
                     }
 
-                    @Override
-                    public void onEnterComplete() {
-
-                    }
                 });
 
     }

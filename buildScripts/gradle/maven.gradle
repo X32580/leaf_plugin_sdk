@@ -90,9 +90,9 @@ def sourceJar(String name, String path) {
 }
 
 def publicationVersion = project.ARTIFACT_VERSION
-def coreGroupId = 'com.tencent.shadow.core'
+def coreGroupId = 'com.leaf.shadow.core'
 def corePath = 'projects/sdk/core'
-def dynamicGroupId = 'com.tencent.shadow.dynamic'
+def dynamicGroupId = 'com.leaf.shadow.dynamic'
 def dynamicPath = 'projects/sdk/dynamic'
 
 task getPublicationVersion() {
@@ -430,38 +430,21 @@ publishing {
         }
     }
     repositories {
+
         def useLocalCredential = false
-        Properties properties = new Properties()
-        def propertiesFile = project.rootProject.file('local.properties')
-        if (propertiesFile.exists()) {
-            properties.load(propertiesFile.newDataInputStream())
-
-            if ("${properties.getProperty('gpr.local')}".equalsIgnoreCase('true')) {
-                def user = properties.getProperty('gpr.user')
-                def key = properties.getProperty('gpr.key')
-                maven {
-                    name = "GitHubPackages"
-                    credentials {
-                        username = user
-                        password = key
-                    }
-                    url "https://maven.pkg.github.com/${user}/shadow"
-                }
-
-                useLocalCredential = true
-            }
-        }
-
-        if (!useLocalCredential && "${System.env.CI}".equalsIgnoreCase("true")) {
+        if (!useLocalCredential) {
+            println("发布到Github依赖")
             maven {
                 name = "GitHubPackages"
                 credentials {
-                    username = System.getenv("GITHUB_ACTOR")
-                    password = System.getenv("GITHUB_TOKEN")
+                    username = "X32580"
+                    password = "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"
                 }
-                url "https://maven.pkg.github.com/" + "${System.env.GITHUB_REPOSITORY}".toLowerCase()
+                url "https://maven.pkg.github.com/X32580/plug_sdk"
             }
+            mavenLocal() //发布到 Github 的同时更新本地代码
         } else {
+            println("发布到本地仓库依赖")
             mavenLocal()
         }
     }

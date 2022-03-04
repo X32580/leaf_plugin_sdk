@@ -17,7 +17,7 @@ buildscript {
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'com.tencent.shadow.plugin'
+apply plugin: 'com.leaf.shadow.plugin'
 
 android {
     compileSdkVersion project.COMPILE_SDK_VERSION

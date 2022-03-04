@@ -32,18 +32,18 @@ internal fun createPackagePluginTask(project: Project, buildType: PluginBuildTyp
         project.logger.info("PackagePluginTask task run")
 
         //runtime apk file
-        val runtimeApkName: String = buildType.runtimeApkConfig.first
+        val runtimeApkName: String = buildType.runtimeApkConfig.v1
         var runtimeFile: File? = null
         if (runtimeApkName.isNotEmpty()) {
-            runtimeFile = ShadowPluginHelper.getRuntimeApkFile(project, buildType, false)
+            runtimeFile = ShadowPluginHelper.getRuntimeApkFile(project, buildType, true)
         }
 
 
         //loader apk file
-        val loaderApkName: String = buildType.loaderApkConfig.first
+        val loaderApkName: String = buildType.loaderApkConfig.v2
         var loaderFile: File? = null
         if (loaderApkName.isNotEmpty()) {
-            loaderFile = ShadowPluginHelper.getLoaderApkFile(project, buildType, false)
+            loaderFile = ShadowPluginHelper.getLoaderApkFile(project, buildType, true)
         }
 
 
@@ -56,7 +56,7 @@ internal fun createPackagePluginTask(project: Project, buildType: PluginBuildTyp
         //all plugin apks
         val pluginFiles: MutableList<File> = mutableListOf()
         for (i in buildType.pluginApks) {
-            pluginFiles.add(ShadowPluginHelper.getPluginFile(project, i, false))
+            pluginFiles.add(ShadowPluginHelper.getPluginFile(project, i))
         }
 
 
@@ -81,9 +81,53 @@ internal fun createPackagePluginTask(project: Project, buildType: PluginBuildTyp
         } else {
             it.archiveName = "$prefix-${buildType.name}-$suffix.zip"
         }
-        it.destinationDir =
-            File(if (extension.destinationDir.isEmpty()) "${project.rootDir}/build" else extension.destinationDir)
+        val parent = File(extension.destinationDir+"/${buildType.name}")
+        if (!parent.exists())
+            parent.mkdirs()
+        it.destinationDir = parent
     }.dependsOn(createGenerateConfigTask(project, buildType))
+}
+
+
+/**
+ * 拷贝资源到安全地点 防止被 Android studio 清除
+ */
+private fun copyResources(project: Project, buildType: PluginBuildType) {
+
+    val runTimeApk = ShadowPluginHelper.getRuntimeApkFile(project, buildType, false)
+    if (runTimeApk.exists()) {
+        val copy = ShadowPluginHelper.getRuntimeApkFile(project, buildType, true)
+        if (copy.exists())
+            copy.delete()
+        copy.createNewFile()
+        ShadowPluginHelper.copyFileToFile(runTimeApk, copy)
+        println("runtime apk file update successful path:${copy}")
+    }
+
+    val loaderApk = ShadowPluginHelper.getLoaderApkFile(project, buildType, false)
+    if (loaderApk.exists()) {
+        val copy = ShadowPluginHelper.getLoaderApkFile(project, buildType, true)
+        if (copy.exists())
+            copy.delete()
+        copy.createNewFile()
+        ShadowPluginHelper.copyFileToFile(loaderApk, copy)
+        println("loader apk file update successful path:${copy}")
+    }
+
+    //拷贝到 存放的目录用于 使用
+    val managerApk = ShadowPluginHelper.getManagerFile(project, buildType, false)
+    if (managerApk.exists()) {
+        val copy = ShadowPluginHelper.getManagerFile(project, buildType, true)
+        if (copy.exists())
+            copy.delete()
+        copy.createNewFile()
+        ShadowPluginHelper.copyFileToFile(managerApk, copy)
+        println("manager apk file update successful path:${copy}")
+    }
+
+    buildType.pluginApks.forEach {
+        ShadowPluginHelper.copyPluginFile(project, it)
+    }
 }
 
 private fun createGenerateConfigTask(project: Project, buildType: PluginBuildType): Task {
@@ -92,22 +136,27 @@ private fun createGenerateConfigTask(project: Project, buildType: PluginBuildTyp
     val extension = packagePlugin as PackagePluginExtension
 
     //runtime apk build task
-    val runtimeApkName = buildType.runtimeApkConfig.first
+    val runtimeApkName = buildType.runtimeApkConfig.v1
     var runtimeTask = ""
     if (runtimeApkName.isNotEmpty()) {
-        runtimeTask = buildType.runtimeApkConfig.second
+        runtimeTask = buildType.runtimeApkConfig.v2
         project.logger.info("runtime task = $runtimeTask")
     }
 
-
     //loader apk build task
-    val loaderApkName = buildType.loaderApkConfig.first
+    val loaderApkName = buildType.loaderApkConfig.v1
     var loaderTask = ""
     if (loaderApkName.isNotEmpty()) {
-        loaderTask = buildType.loaderApkConfig.second
+        loaderTask = buildType.loaderApkConfig.v2
         project.logger.info("loader task = $loaderTask")
     }
 
+    val managerApkName = buildType.managerApkConfig.v1
+    var managerTask = ""
+    if (managerApkName.isNotEmpty()) {
+        managerTask = buildType.managerApkConfig.v2
+        project.logger.info("loader task = $managerTask")
+    }
 
     val targetConfigFile =
         File(project.buildDir.absolutePath + "/intermediates/generatePluginConfig/${buildType.name}/config.json")
@@ -127,6 +176,9 @@ private fun createGenerateConfigTask(project: Project, buildType: PluginBuildTyp
         it.outputs.upToDateWhen { false }
     }
         .dependsOn(pluginApkTasks)
+        .doFirst {
+            copyResources(project, buildType)
+        }
         .doLast {
 
             project.logger.info("generateConfig task begin")
@@ -145,6 +197,9 @@ private fun createGenerateConfigTask(project: Project, buildType: PluginBuildTyp
     }
     if (runtimeTask.isNotEmpty()) {
         task.dependsOn(runtimeTask)
+    }
+    if (managerTask.isNotEmpty()) {
+        task.dependsOn(managerTask)
     }
     return task
 }

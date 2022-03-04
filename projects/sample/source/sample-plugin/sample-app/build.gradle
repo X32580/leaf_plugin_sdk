@@ -17,7 +17,7 @@ buildscript {
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'com.tencent.shadow.plugin'
+apply plugin: 'com.leaf.shadow.plugin'
 
 android {
     compileSdkVersion project.COMPILE_SDK_VERSION
@@ -166,9 +166,8 @@ shadow {
         loaderApkProjectPath = 'projects/sample/source/sample-plugin/sample-loader'
         runtimeApkProjectPath = 'projects/sample/source/sample-plugin/sample-runtime'
 
-        archiveSuffix = System.getenv("PluginSuffix") ?: ""
-        archivePrefix = 'plugin'
         destinationDir = "${getRootProject().getBuildDir()}"
+        assetsDir = "${getRootProject().getBuildDir()}"
 
         version = 4
         compactVersion = [1, 2, 3]

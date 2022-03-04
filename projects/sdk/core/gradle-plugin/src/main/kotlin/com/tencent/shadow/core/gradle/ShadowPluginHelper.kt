@@ -79,7 +79,7 @@ open class ShadowPluginHelper {
         fun getRuntimeApkFile(
             project: Project,
             buildType: PluginBuildType,
-            checkExist: Boolean
+            isCopyPath: Boolean
         ): File {
             val packagePlugin = project.extensions.findByName("packagePlugin")
             val extension = packagePlugin as PackagePluginExtension
@@ -88,21 +88,22 @@ open class ShadowPluginHelper {
             val runtimeFileParent =
                 splitList[splitList.lastIndex].replace("assemble", "").toLowerCase()
             val runtimeApkName: String = buildType.runtimeApkConfig.first
-            val runtimeFile = File(
-                "${project.rootDir}" +
-                        "/${extension.runtimeApkProjectPath}/build/outputs/apk/$runtimeFileParent/$runtimeApkName"
-            )
-            if (checkExist && !runtimeFile.exists()) {
-                throw IllegalArgumentException(runtimeFile.absolutePath + " , runtime file not exist...")
-            }
-            project.logger.info("runtimeFile = $runtimeFile")
-            return runtimeFile
+            val parentDir = File("${extension.assetsDir}/plugin/$runtimeFileParent")
+            if (!parentDir.exists())
+                parentDir.mkdirs()
+            return if (isCopyPath) File(
+                "${parentDir}/$runtimeApkName"
+            ) else
+                File(
+                    "${project.rootDir}" +
+                            "/${extension.runtimeApkProjectPath}/build/outputs/apk/$runtimeFileParent/$runtimeApkName"
+                )
         }
 
         fun getLoaderApkFile(
             project: Project,
             buildType: PluginBuildType,
-            checkExist: Boolean
+            isCopyPath: Boolean
         ): File {
             val packagePlugin = project.extensions.findByName("packagePlugin")
             val extension = packagePlugin as PackagePluginExtension
@@ -111,29 +112,115 @@ open class ShadowPluginHelper {
             val splitList = buildType.loaderApkConfig.second.split(":")
             val loaderFileParent =
                 splitList[splitList.lastIndex].replace("assemble", "").toLowerCase()
-            val loaderFile = File(
+            val parentDir = File("${extension.assetsDir}/plugin/$loaderFileParent")
+            if (!parentDir.exists())
+                parentDir.mkdirs()
+            return if (isCopyPath) File("${parentDir}/$loaderApkName")
+            else File(
                 "${project.rootDir}" +
                         "/${extension.loaderApkProjectPath}/build/outputs/apk/$loaderFileParent/$loaderApkName"
             )
-            if (checkExist && !loaderFile.exists()) {
-                throw IllegalArgumentException(loaderFile.absolutePath + " , loader file not exist...")
-            }
-            project.logger.info("loaderFile = $loaderFile")
-            return loaderFile
 
+        }
+
+        /**
+         * Android studio  会删除build 文件，所以plugin apk 也需要 拷贝到 output 文件夹下
+         */
+        fun copyPluginFile(
+            project: Project,
+            pluginConfig: PluginApkConfig,
+        ) {
+
+            val packagePlugin = project.extensions.findByName("packagePlugin")
+            val extension = packagePlugin as PackagePluginExtension
+
+            val pluginFile = File(project.rootDir, pluginConfig.apkPath)
+
+            val split1 = pluginConfig.buildTask.split(":")
+            val type = split1.last().replace("assemble","").toLowerCase()
+
+            val parent = File("${extension.assetsDir}/plugin/${type}")
+
+            if (!pluginFile.exists() && !parent.exists()) {
+                throw IllegalArgumentException(" plugin" + pluginFile.absolutePath + " , plugin file not exist...--拷贝 plugin 文件失败 请先打包插件后操作")
+            }
+
+            if (!parent.exists())
+                parent.mkdirs()
+            val split = pluginConfig.apkPath.split("/")
+            val apkName = split.last()
+            val copyFile = File(parent,apkName)
+            if (pluginFile.exists()) { //有新的 插件apk 文件更新插件 拷贝文件
+                if (copyFile.exists())
+                    copyFile.delete()
+                copyFile.createNewFile()
+                copyFileToFile(pluginFile, copyFile)
+                println("plugin apk file update successful path:${copyFile}")
+            }
+        }
+
+        fun getManagerFile(
+            project: Project,
+            buildType: PluginBuildType,
+            isCopyPath:Boolean
+        ) :File {
+
+            val packagePlugin = project.extensions.findByName("packagePlugin")
+            val extension = packagePlugin as PackagePluginExtension
+
+            val managerApkName: String = buildType.managerApkConfig.first
+            val splitList = buildType.managerApkConfig.second.split(":")
+            val managerFileParent =
+                splitList[splitList.lastIndex].replace("assemble", "").toLowerCase()
+            val parentDir = File(extension.assetsDir+"/manager/${managerFileParent}")
+            if (!parentDir.exists())
+                parentDir.mkdirs()
+            return if (isCopyPath) File(parentDir,managerApkName)
+            else File(
+                "${project.rootDir}" +
+                        "/${extension.managerAkProjectPath}/build/outputs/apk/$managerFileParent/$managerApkName"
+            )
         }
 
         fun getPluginFile(
             project: Project,
-            pluginConfig: PluginApkConfig,
-            checkExist: Boolean
+            pluginConfig: PluginApkConfig
         ): File {
-            val pluginFile = File(project.rootDir, pluginConfig.apkPath)
-            if (checkExist && !pluginFile.exists()) {
-                throw IllegalArgumentException(pluginFile.absolutePath + " , plugin file not exist...")
-            }
+
+            val packagePlugin = project.extensions.findByName("packagePlugin")
+            val extension = packagePlugin as PackagePluginExtension
+            val split = pluginConfig.buildTask.split(":")
+            val type = split.last().replace("assemble","").toLowerCase()
+
+            val fileName = pluginConfig.apkPath.split("/").last()
+            val pluginFile =  File("${extension.assetsDir}/plugin/${type}/${fileName}")
             project.logger.info("pluginFile = $pluginFile")
             return pluginFile
         }
+
+
+        fun copyFileToFile(rawFile: File, file: File): Boolean {
+
+            val bytes = ByteArray(1024)
+            var len = 0
+            val outputStream = file.outputStream()
+            val inputStream = rawFile.inputStream()
+            return try {
+                len = inputStream.read(bytes)
+                while (len != -1) {
+                    outputStream.write(bytes, 0, len)
+                    len = inputStream.read(bytes)
+                }
+                inputStream.close()
+                outputStream.flush()
+                outputStream.close()
+                true
+            } catch (e: Exception) {
+                false
+            }
+
+        }
+
+
     }
 }

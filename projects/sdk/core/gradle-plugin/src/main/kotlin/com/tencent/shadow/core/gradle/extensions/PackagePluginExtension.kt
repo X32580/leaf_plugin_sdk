@@ -31,11 +31,11 @@ open class PackagePluginExtension {
 
     var loaderApkProjectPath = ""
     var runtimeApkProjectPath = ""
-
+    var managerAkProjectPath = ""
     var archivePrefix = ""
     var archiveSuffix = ""
     var destinationDir = ""
-
+    var assetsDir = ""
     var uuid = ""
     var version: Int = 0
     var uuidNickName = ""
@@ -90,7 +90,7 @@ open class PackagePluginExtension {
             pluginObj["partKey"] = i.partKey
             pluginObj["apkName"] = File(i.apkPath).name
             pluginObj["hash"] =
-                ShadowPluginHelper.getFileMD5(ShadowPluginHelper.getPluginFile(project, i, true))
+                ShadowPluginHelper.getFileMD5(ShadowPluginHelper.getPluginFile(project, i))
             if (i.dependsOn.isNotEmpty()) {
                 val dependsOnJson = JSONArray()
                 for (k in i.dependsOn) {

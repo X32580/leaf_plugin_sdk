@@ -75,7 +75,7 @@ class ShadowPlugin : Plugin<Project> {
      */
     private fun checkKotlinAndroidPluginForPluginManifestTask(project: Project) {
         if (project.plugins.hasPlugin("kotlin-android")) {
-            throw Error("必须在kotlin-android之前应用com.tencent.shadow.plugin")
+            throw Error("必须在kotlin-android之前应用com.leaf.shadow.core:gradle-plugin")
         }
     }
 
